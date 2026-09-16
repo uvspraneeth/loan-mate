@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 215 28% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 28% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 28% 12%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 215 28% 12%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 14% 45%;
+    --accent: 161 80% 95%;
+    --accent-foreground: 160 84% 30%;
+    --destructive: 0 73% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 213 27% 88%;
+    --input: 213 27% 88%;
+    --ring: 160 84% 39%;
+    --chart-1: 160 84% 39%;
+    --chart-2: 32 92% 50%;
+    --chart-3: 0 73% 50%;
+    --chart-4: 199 76% 48%;
+    --chart-5: 280 65% 60%;
+    --radius: 0.75rem;
+    --font-heading: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 28% 12%;
+    --sidebar-primary: 160 84% 39%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 161 80% 95%;
+    --sidebar-accent-foreground: 160 84% 30%;
+    --sidebar-border: 213 27% 88%;
+    --sidebar-ring: 160 84% 39%;
+  }
+
+  .dark {
+    --background: 215 28% 8%;
+    --foreground: 210 20% 96%;
+    --card: 215 28% 11%;
+    --card-foreground: 210 20% 96%;
+    --popover: 215 28% 11%;
+    --popover-foreground: 210 20% 96%;
+    --primary: 160 70% 45%;
+    --primary-foreground: 215 28% 8%;
+    --secondary: 215 28% 16%;
+    --secondary-foreground: 210 20% 96%;
+    --muted: 215 28% 16%;
+    --muted-foreground: 217 11% 65%;
+    --accent: 161 40% 20%;
+    --accent-foreground: 161 80% 85%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 210 20% 96%;
+    --border: 215 28% 18%;
+    --input: 215 28% 18%;
+    --ring: 160 70% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  .font-display {
+    font-feature-settings: "tnum" 1;
+  }
+
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 9999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}

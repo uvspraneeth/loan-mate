@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">LoanMate</string>
+    <string name="title_activity_main">LoanMate</string>
+    <string name="package_name">com.loanmate.app</string>
+    <string name="custom_url_scheme">com.loanmate.app</string>
+</resources>
