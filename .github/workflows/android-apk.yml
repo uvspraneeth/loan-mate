@@ -34,12 +34,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Linux native bindings for Vite
+        run: npm install @rolldown/binding-linux-x64-gnu@1.2.9 lightningcss-linux-x64-gnu@1.33.0 --no-save
+
       - name: Sync Capacitor Android project
         run: npm run mobile:sync
 
       - name: Build debug APK
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: bash ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
