@@ -4,6 +4,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { AppLockProvider } from '@/lib/AppLock';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -21,6 +22,8 @@ import Reports from '@/pages/Reports';
 import Settings from '@/pages/Settings';
 import Import from '@/pages/Import';
 import { Navigate } from 'react-router-dom';
+import { isSupabaseConfigured } from '@/api/supabaseClient';
+import { LogoMark } from '@/components/Logo';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -70,17 +73,44 @@ const AuthenticatedApp = () => {
   );
 };
 
+// Device lock sits on top of login: it only applies while someone is signed in.
+const LockedApp = ({ children }) => {
+  const { isAuthenticated, logout } = useAuth();
+  // Fallback when the device can't verify: sign out and log in with the password again.
+  const logInWithPassword = async () => {
+    await logout();
+    window.location.assign('/login');
+  };
+  return <AppLockProvider enabled={isAuthenticated} onUsePassword={logInWithPassword}>{children}</AppLockProvider>;
+};
+
+const SupabaseSetupRequired = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="w-full max-w-md text-center space-y-4">
+      <LogoMark className="w-14 h-14 mx-auto" />
+      <h1 className="text-2xl font-bold text-slate-900">Supabase isn&apos;t configured</h1>
+      <p className="text-sm text-slate-500">
+        Create a <code className="rounded bg-slate-100 px-1">.env.local</code> file (see <code className="rounded bg-slate-100 px-1">.env.example</code>) with
+        {' '}<code className="rounded bg-slate-100 px-1">VITE_SUPABASE_URL</code> and <code className="rounded bg-slate-100 px-1">VITE_SUPABASE_ANON_KEY</code>, then restart the dev server.
+      </p>
+    </div>
+  </div>
+);
+
 function App() {
+  if (!isSupabaseConfigured) return <SupabaseSetupRequired />;
 
   return (
     <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <ScrollToTop />
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
+      <LockedApp>
+        <QueryClientProvider client={queryClientInstance}>
+          <Router>
+            <ScrollToTop />
+            <AuthenticatedApp />
+          </Router>
+          <Toaster />
+        </QueryClientProvider>
+      </LockedApp>
     </AuthProvider>
   )
 }

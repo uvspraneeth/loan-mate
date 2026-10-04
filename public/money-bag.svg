@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="LoanMate">
+  <!-- Green vector redraw of money-bag.png: tied sack with a % on it. -->
+  <g fill="#059669" stroke="#059669" stroke-width="8" stroke-linejoin="round">
+    <path d="M166 30C196 34 222 26 238 12C248 4 264 4 274 12C290 26 316 34 346 30L324 90H188Z"/>
+    <rect x="161" y="116" width="190" height="28" rx="14"/>
+    <path d="M198 172H314C384 172 460 292 460 392C460 448 432 482 378 482H134C80 482 52 448 52 392C52 292 128 172 198 172Z"/>
+  </g>
+  <g fill="none" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round">
+    <ellipse cx="207" cy="302" rx="22" ry="27"/>
+    <ellipse cx="310" cy="357" rx="22" ry="27"/>
+    <path d="M297 272L215 390"/>
+  </g>
+</svg>

@@ -4,7 +4,6 @@ const config: CapacitorConfig = {
   appId: 'com.loanmate.app',
   appName: 'LoanMate',
   webDir: 'dist',
-  bundledWebRuntime: false,
 };
 
 export default config;

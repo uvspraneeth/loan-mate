@@ -1,76 +1,47 @@
-import { db } from '@/api/supabaseClient';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-import { useLocation } from 'react-router-dom';
+import { ArrowLeft, LayoutDashboard } from 'lucide-react';
+import { LogoMark } from '@/components/Logo';
+import { Button } from '@/components/ui/button';
 
-import { useQuery } from '@tanstack/react-query';
-
-export default function PageNotFound({}) {
+export default function PageNotFound() {
     const location = useLocation();
-    const pageName = location.pathname.substring(1);
+    const navigate = useNavigate();
+    const pagePath = location.pathname;
 
-    const { data: authData, isFetched } = useQuery({
-        queryKey: ['user'],
-        queryFn: async () => {
-            try {
-                const user = await db.auth.me();
-                return { user, isAuthenticated: true };
-            } catch (error) {
-                return { user: null, isAuthenticated: false };
-            }
-        }
-    });
-    
+    const canGoBack = typeof window !== 'undefined' && window.history.length > 1;
+
     return (
-        <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-            <div className="max-w-md w-full">
-                <div className="text-center space-y-6">
-                    {/* 404 Error Code */}
-                    <div className="space-y-2">
-                        <h1 className="text-7xl font-light text-slate-300">404</h1>
-                        <div className="h-0.5 w-16 bg-slate-200 mx-auto"></div>
-                    </div>
-                    
-                    {/* Main Message */}
-                    <div className="space-y-3">
-                        <h2 className="text-2xl font-medium text-slate-800">
-                            Page Not Found
-                        </h2>
-                        <p className="text-slate-600 leading-relaxed">
-                            The page <span className="font-medium text-slate-700">"{pageName}"</span> could not be found in this application.
-                        </p>
-                    </div>
-                    
-                    {/* Admin Note */}
-                    {isFetched && authData.isAuthenticated && authData.user?.role === 'admin' && (
-                        <div className="mt-8 p-4 bg-slate-100 rounded-lg border border-slate-200">
-                            <div className="flex items-start space-x-3">
-                                <div className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center mt-0.5">
-                                    <div className="w-2 h-2 rounded-full bg-orange-400"></div>
-                                </div>
-                                <div className="text-left space-y-1">
-                                    <p className="text-sm font-medium text-slate-700">Admin Note</p>
-                                    <p className="text-sm text-slate-600 leading-relaxed">
-                                        This could mean that the AI hasn't implemented this page yet. Ask it to implement it in the chat.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+        <main className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-10">
+            <div className="w-full max-w-md text-center">
+                <div className="relative mx-auto mb-6 inline-flex">
+                    <LogoMark className="h-16 w-16 drop-shadow-sm" />
+                    <span className="absolute -bottom-2 -right-3 rounded-full border border-slate-200 bg-white px-2 py-0.5 font-display text-xs font-bold text-slate-500 shadow-sm tnum">
+                        404
+                    </span>
+                </div>
+
+                <p className="font-display text-sm font-semibold tracking-wide text-emerald-700">LoanMate</p>
+                <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-slate-900">
+                    This page went missing
+                </h1>
+                <p className="mt-3 text-slate-600 leading-relaxed">
+                    We couldn&apos;t find{' '}
+                    <code className="break-all rounded bg-white px-1.5 py-0.5 text-sm text-slate-700 ring-1 ring-slate-200">{pagePath}</code>.
+                    {' '}It may have moved, or the link might be mistyped. Your loans and payments are safe.
+                </p>
+
+                <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-center">
+                    {canGoBack && (
+                        <Button type="button" variant="outline" onClick={() => navigate(-1)} className="h-11 bg-white">
+                            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Go back
+                        </Button>
                     )}
-                    
-                    {/* Action Button */}
-                    <div className="pt-6">
-                        <button 
-                            onClick={() => window.location.href = '/'} 
-                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
-                        >
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                            Go Home
-                        </button>
-                    </div>
+                    <Button asChild className="h-11 bg-emerald-600 hover:bg-emerald-700">
+                        <Link to="/"><LayoutDashboard className="h-4 w-4" aria-hidden="true" /> Go to dashboard</Link>
+                    </Button>
                 </div>
             </div>
-        </div>
-    )
+        </main>
+    );
 }
