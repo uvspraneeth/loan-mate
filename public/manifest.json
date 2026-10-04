@@ -1,0 +1,18 @@
+{
+  "name": "LoanMate",
+  "short_name": "LoanMate",
+  "description": "Simple lending. Clear payments. A private loan manager for family & friends lending.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#059669",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, ArrowLeft, Loader2 } from "lucide-react";
+import { Mail, MailCheck, ArrowLeft, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 
 export default function ForgotPassword() {
@@ -20,7 +20,7 @@ export default function ForgotPassword() {
     try {
       await db.auth.resetPasswordRequest(email);
     } catch {
-      // Always show success regardless
+      // Always show success regardless (don't reveal whether an account exists)
     } finally {
       setLoading(false);
       setSent(true);
@@ -29,21 +29,37 @@ export default function ForgotPassword() {
 
   return (
     <AuthLayout
-      icon={Mail}
-      title="Reset password"
-      subtitle="We'll send you a link to reset it"
+      icon={sent ? MailCheck : Mail}
+      title={sent ? "Check your email" : "Reset password"}
+      subtitle={sent ? "Your reset link is on its way" : "We'll send you a link to reset it"}
       footer={
-        <Link to="/login" className="text-primary font-medium hover:underline">
-          <ArrowLeft className="w-3 h-3 inline mr-1" />Back to log in
+        <Link to="/login" className="inline-flex items-center min-h-10 text-primary font-medium hover:underline">
+          <ArrowLeft className="w-3.5 h-3.5 mr-1" aria-hidden="true" />Back to log in
         </Link>
       }
     >
       {sent ? (
-        <p className="text-sm text-foreground text-center">
-          If an account exists with that email, you'll receive a password reset link shortly.
-        </p>
+        <div role="status" className="text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100">
+            <MailCheck className="h-6 w-6" aria-hidden="true" />
+          </div>
+          <p className="text-sm text-foreground">
+            If an account exists for <span className="font-semibold break-all">{email}</span>, you'll receive a password reset link shortly.
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            The link opens a page where you can choose a new password. Check your spam folder if it doesn't arrive in a few minutes.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-12 mt-6 font-medium"
+            onClick={() => setSent(false)}
+          >
+            Use a different email
+          </Button>
+        </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" aria-busy={loading}>
           <div className="space-y-2">
             <Label htmlFor="email">Email address</Label>
             <div className="relative">
@@ -64,7 +80,7 @@ export default function ForgotPassword() {
           <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
                 Sending...
               </>
             ) : (

@@ -2,7 +2,7 @@ import { db } from '@/api/supabaseClient';
 
 import { useEffect, useState, useCallback } from 'react';
 
-import { recomputeInstallmentStatuses, toISODate } from './loanCalc';
+import { toISODate } from './loanCalc';
 
 // Central data hook: loads borrowers, loans, installments, payments, activities,
 // notification logs, and settings. Derives live balances from installments.
@@ -16,8 +16,8 @@ export function useLendingData() {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const loadAll = useCallback(async () => {
-    setLoading(true);
+  const loadAll = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
     try {
       const [b, l, ins, p, act, notif] = await Promise.all([
         db.entities.Borrower.list('-created_date', 500),
@@ -44,17 +44,29 @@ export function useLendingData() {
 
   useEffect(() => {
     loadAll();
-    // realtime
+    // realtime — one write (e.g. a new loan + its installments) emits many events,
+    // so coalesce them into a single reload.
+    let timer;
+    const scheduleReload = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => loadAll({ silent: true }), 400);
+    };
     const unsubs = [];
     try {
-      unsubs.push(db.entities.Borrower.subscribe(() => loadAll()));
-      unsubs.push(db.entities.Loan.subscribe(() => loadAll()));
-      unsubs.push(db.entities.Installment.subscribe(() => loadAll()));
-      unsubs.push(db.entities.Payment.subscribe(() => loadAll()));
-      unsubs.push(db.entities.Activity.subscribe(() => loadAll()));
-      unsubs.push(db.entities.NotificationLog.subscribe(() => loadAll()));
-    } catch (e) {}
-    return () => unsubs.forEach((u) => u && u());
+      unsubs.push(db.entities.Borrower.subscribe(scheduleReload));
+      unsubs.push(db.entities.Loan.subscribe(scheduleReload));
+      unsubs.push(db.entities.Installment.subscribe(scheduleReload));
+      unsubs.push(db.entities.Payment.subscribe(scheduleReload));
+      unsubs.push(db.entities.Activity.subscribe(scheduleReload));
+      unsubs.push(db.entities.NotificationLog.subscribe(scheduleReload));
+      unsubs.push(db.entities.PaymentSetting.subscribe(scheduleReload));
+    } catch (e) {
+      console.error('realtime subscribe error', e);
+    }
+    return () => {
+      clearTimeout(timer);
+      unsubs.forEach((u) => u && u());
+    };
   }, [loadAll]);
 
   return {

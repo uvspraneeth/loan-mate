@@ -6,9 +6,19 @@ import { roundMoney, roundRupee } from './money';
 //   - principal_and_interest: flat monthly principal + interest
 // All amounts in whole rupees.
 
+// Parse a date input as a local calendar date. `new Date('YYYY-MM-DD')` is UTC
+// midnight, which lands on the previous day in timezones behind UTC.
+function toLocalDate(dateInput) {
+  if (typeof dateInput === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
+    const [y, m, d] = dateInput.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+  return new Date(dateInput);
+}
+
 // Add months to a date (YYYY-MM-DD string or Date)
 export function addMonths(dateInput, months) {
-  const d = new Date(dateInput);
+  const d = toLocalDate(dateInput);
   const day = d.getDate();
   d.setMonth(d.getMonth() + months);
   // handle month overflow (e.g. Jan 31 + 1 month -> Mar 3); clamp to end of month
@@ -16,12 +26,24 @@ export function addMonths(dateInput, months) {
   return d;
 }
 
+// Local calendar date as YYYY-MM-DD (toISOString() would use UTC and can be off by a day)
 export function toISODate(d) {
-  return new Date(d).toISOString().slice(0, 10);
+  const date = toLocalDate(d);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+// Next sequential loan number (LN-1001, LN-1002, …) based on the highest existing one.
+export function nextLoanNumber(existingLoanNumbers) {
+  const max = existingLoanNumbers.reduce((acc, num) => {
+    const n = parseInt(String(num || '').replace(/^LN-/, ''), 10);
+    return Number.isFinite(n) && n > acc ? n : acc;
+  }, 1000);
+  return `LN-${max + 1}`;
 }
 
 export function daysBetween(a, b) {
-  const ms = new Date(b).setHours(0, 0, 0, 0) - new Date(a).setHours(0, 0, 0, 0);
+  const ms = toLocalDate(b).setHours(0, 0, 0, 0) - toLocalDate(a).setHours(0, 0, 0, 0);
   return Math.round(ms / 86400000);
 }
 

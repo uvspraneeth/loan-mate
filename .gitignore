@@ -37,3 +37,6 @@ dist-ssr
 
 # Supabase local development metadata
 /supabase/.temp
+
+# Skill scratch output (e.g. logo drafts)
+/.skill-archive

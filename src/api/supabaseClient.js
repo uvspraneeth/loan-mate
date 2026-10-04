@@ -3,14 +3,20 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY');
-}
+// When env vars are missing, App renders a setup screen instead of crashing on import.
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-anon-key',
+);
+
+// Auth email links must point at the web app, not the Capacitor webview (https://localhost).
+const siteUrl = (import.meta.env.VITE_SITE_URL || window.location.origin).replace(/\/$/, '');
 
 const entity = (name) => {
   const tableNames = {
+    Activity: 'activities',
     NotificationLog: 'notificationlogs',
     PaymentSetting: 'paymentsettings',
   };
@@ -88,27 +94,15 @@ export const db = {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
     },
-    loginWithProvider: async (provider, returnTo = '/') => {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo: `${window.location.origin}${returnTo}` },
-      });
-      if (error) throw error;
-    },
     register: async ({ email, password, full_name }) => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { full_name },
-          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+          emailRedirectTo: `${siteUrl}/auth/confirm`,
         },
       });
-      if (error) throw error;
-      return data;
-    },
-    verifyOtp: async ({ email, otpCode }) => {
-      const { data, error } = await supabase.auth.verifyOtp({ email, token: otpCode, type: 'signup' });
       if (error) throw error;
       return data;
     },
@@ -118,13 +112,9 @@ export const db = {
       await supabase.auth.signOut();
     },
     exchangeCodeForSession: (code) => supabase.auth.exchangeCodeForSession(code),
-    resendOtp: async (email) => {
-      const { error } = await supabase.auth.resend({ type: 'signup', email });
-      if (error) throw error;
-    },
     resetPasswordRequest: async (email) => {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${siteUrl}/reset-password`,
       });
       if (error) throw error;
     },
@@ -139,7 +129,11 @@ export const db = {
   integrations: {
     Core: {
       UploadPublicFile: async ({ file }) => {
-        const path = `${crypto.randomUUID()}-${file.name}`;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+        // Storage policies only allow writes inside the uploader's own folder.
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, '_').slice(-80) || 'proof';
+        const path = `${user.id}/${crypto.randomUUID()}-${safeName}`;
         const { error } = await supabase.storage.from('payment-proofs').upload(path, file);
         if (error) throw error;
         const { data } = supabase.storage.from('payment-proofs').getPublicUrl(path);
